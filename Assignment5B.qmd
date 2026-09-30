@@ -10,3 +10,5 @@ editor: visual
 ## Approach Deliverable
 
 ### Overview
+
+For this assignment, I will build on the dataframe I created in Project 1. The plan is to use each player's pre-tournament rating and the pre-tournament ratings of their seven opponents to calculate an expected score for each game using the standard Elo expected-score formula. I will then add the expected scores across all seven games to get each player's expected tournament score and compare it with their actual score. Finally, I will calculate the difference between actual and expected scores and identify the five players with the largest positive differences and the five with the largest negative differences.
