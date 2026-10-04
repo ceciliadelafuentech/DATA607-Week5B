@@ -11,4 +11,22 @@ editor: visual
 
 ### Overview
 
-For this assignment, I will build on the dataframe I created in Project 1. The plan is to use each player's pre-tournament rating and the pre-tournament ratings of their seven opponents to calculate an expected score for each game using the standard Elo expected-score formula. I will then add the expected scores across all seven games to get each player's expected tournament score and compare it with their actual score. Finally, I will calculate the difference between actual and expected scores and identify the five players with the largest positive differences and the five with the largest negative differences.
+For this assignment, I will build on the CSV I created in Project 1. The plan is to use each player's pre-tournament rating and the pre-tournament ratings of their seven opponents to calculate an expected score for each game using the standard Elo expected-score formula. I will then add the expected scores across all seven games to get each player's expected tournament score and compare it with their actual score. Finally, I will calculate the difference between actual and expected scores and identify the five players with the largest positive differences and the five with the largest negative differences.
+
+## Code Base Deliverable
+
+### Load libraries
+
+```{r}
+library(tidyverse)
+```
+
+### Data and transformations
+
+Load data from github and examine it
+
+```{r}
+tournament_results <- read_csv(   "https://raw.githubusercontent.com/ceciliadelafuentech/DATA607-Week5B/refs/heads/main/tournament_results.csv" )  
+
+glimpse(tournament_results)
+```
