@@ -267,7 +267,7 @@ $ avg_opponent_rating &lt;dbl&gt; 1605, 1469, 1564, 1574, 1501, 1519, 1372, 1468
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>tournament_results<span class="sc">$</span>difference <span class="ot">&lt;-</span> </span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  tournament_results<span class="sc">$</span>points <span class="sc">-</span> tournament_results<span class="sc">$</span>expected_scores</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Sort the players from largest to smallest difference and select the five players who overperformed the most.</p>
+<p>Create table to sort the players from largest to smallest difference and select the five players who overperformed the most.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>top_overperformers <span class="ot">&lt;-</span> tournament_results <span class="sc">%&gt;%</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(difference)) <span class="sc">%&gt;%</span></span>
@@ -286,7 +286,7 @@ $ avg_opponent_rating &lt;dbl&gt; 1605, 1469, 1564, 1574, 1501, 1519, 1372, 1468
 5 AMIYATOSH PWNANANDAM        3.5          0.773        2.73</code></pre>
 </div>
 </div>
-<p>Sort the players from smallest to largest difference and select the five players who underperformed the most.</p>
+<p>Create table to sort the players from smallest to largest difference and select the five players who underperformed the most.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>top_underperformers <span class="ot">&lt;-</span> tournament_results <span class="sc">%&gt;%</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(difference) <span class="sc">%&gt;%</span></span>

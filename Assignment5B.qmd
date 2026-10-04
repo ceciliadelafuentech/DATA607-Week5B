@@ -137,7 +137,7 @@ tournament_results$difference <-
   tournament_results$points - tournament_results$expected_scores
 ```
 
-Sort the players from largest to smallest difference and select the five players who overperformed the most.
+Create table to sort the players from largest to smallest difference and select the five players who overperformed the most.
 
 ```{r}
 top_overperformers <- tournament_results %>%
@@ -148,7 +148,7 @@ top_overperformers <- tournament_results %>%
 top_overperformers
 ```
 
-Sort the players from smallest to largest difference and select the five players who underperformed the most.
+Create table to sort the players from smallest to largest difference and select the five players who underperformed the most.
 
 ```{r}
 top_underperformers <- tournament_results %>%
