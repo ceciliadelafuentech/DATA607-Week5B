@@ -11,7 +11,7 @@ editor: visual
 
 ### Overview
 
-For this assignment, I will build on the CSV I created in Project 1. The plan is to use each player's pre-tournament rating and the pre-tournament ratings of their seven opponents to calculate an expected score for each game using the standard Elo expected-score formula. I will then add the expected scores across all seven games to get each player's expected tournament score and compare it with their actual score. Finally, I will calculate the difference between actual and expected scores and identify the five players with the largest positive differences and the five with the largest negative differences.
+For this assignment, I will build on the dataframe I created in Project 1. The plan is to use each player's pre-tournament rating and the pre-tournament ratings of their seven opponents to calculate an expected score for each game using the standard Elo expected-score formula. I will then add the expected scores across all seven games to get each player's expected tournament score and compare it with their actual score. Finally, I will calculate the difference between actual and expected scores and identify the five players with the largest positive differences and the five with the largest negative differences.
 
 ## Code Base Deliverable
 
@@ -23,10 +23,158 @@ library(tidyverse)
 
 ### Data and transformations
 
-Load data from github and examine it
+Load original text file data from github
+
+```{r}
+tournament_txt <- readLines(   "https://raw.githubusercontent.com/ceciliadelafuentech/DATA607-Week5B/refs/heads/main/tournamentinfo.txt" )  
+
+glimpse(tournament_txt)
+```
+
+Load CSV output created for Project 1
 
 ```{r}
 tournament_results <- read_csv(   "https://raw.githubusercontent.com/ceciliadelafuentech/DATA607-Week5B/refs/heads/main/tournament_results.csv" )  
 
 glimpse(tournament_results)
 ```
+
+Using the same strategy as in Project1, extract each players' opponents
+
+```{r}
+first_lines <- tournament_txt[grepl("^\\s*\\d+\\s*\\|", tournament_txt)]
+
+rounds <- strsplit(first_lines, "\\|")
+
+opponents <- lapply(rounds, function(x) {
+  as.numeric(gsub("[^0-9]", "", x[4:10]))
+})
+```
+
+Checking the code by calling Gary's (first player on the file) opponents
+
+```{r}
+opponents[[1]]
+```
+
+This returns Gary's seven opponents' ratings.
+
+```{r}
+tournament_results$pre_rating[
+  match(opponents[[1]], tournament_results$pair)
+]
+```
+
+Get Gary's pre-tournament rating.
+
+```{r}
+player_rating <- tournament_results$pre_rating[1]
+print(player_rating)
+```
+
+Store the pre-ratings of Gary's opponents.
+
+```{r}
+opponent_ratings <- tournament_results$pre_rating[
+  match(opponents[[1]], tournament_results$pair)
+]
+```
+
+Calculate Gary's expected score for each game using the Elo formula.
+
+```{r}
+expected_scores <- 1 / (1 + 10^((opponent_ratings - player_rating) / 400))
+```
+
+Check the expected score for each of Gary's seven games.
+
+```{r}
+expected_scores
+```
+
+Add the expected scores together to get Gary's expected tournament score.
+
+```{r}
+sum(expected_scores)
+```
+
+Subtract Gary's expected score from his actual score to see how much he over- or underperformed.
+
+```{r}
+difference <- tournament_results$points[1] - sum(expected_scores)
+
+difference
+```
+
+Once process has been confirmed to work, apply the same calculation to every player. The na.rm = TRUE ignores rounds where there was no opponent, such as a U or H in the original tournament file.
+
+```{r}
+expected_scores <- sapply(1:nrow(tournament_results), function(i) {
+  
+  player_rating <- tournament_results$pre_rating[i]
+  
+  opponent_ratings <- tournament_results$pre_rating[
+    match(opponents[[i]], tournament_results$pair)
+  ]
+  
+  expected_scores <- 1 / (1 + 10^((opponent_ratings - player_rating) / 400))
+  
+  sum(expected_scores, na.rm = TRUE)
+})
+
+```
+
+Add the expected score for each player to the dataset.
+
+```{r}
+tournament_results$expected_scores <- expected_scores
+```
+
+Calculate the difference between each player's actual score and expected score.
+
+```{r}
+tournament_results$difference <- 
+  tournament_results$points - tournament_results$expected_scores
+```
+
+Sort the players from largest to smallest difference and select the five players who overperformed the most.
+
+```{r}
+top_overperformers <- tournament_results %>%
+  arrange(desc(difference)) %>%
+  select(name, points, expected_scores, difference) %>%
+  head(5)
+
+top_overperformers
+```
+
+Sort the players from smallest to largest difference and select the five players who underperformed the most.
+
+```{r}
+top_underperformers <- tournament_results %>%
+  arrange(difference) %>%
+  select(name, points, expected_scores, difference) %>%
+  head(5)
+
+top_underperformers
+```
+
+### Conclusion
+
+For this project, I used the tournament data from Project 1 to calculate each player's expected score based on the difference between their pre-tournament rating and the pre-tournament rating of each opponent. I first extracted the opponent numbers from the original tournament text file and matched those numbers to the players' pre-ratings in the Project 1 dataset. I then calculated the expected score for each game using the Elo formula and summed the individual expected scores to get an expected score for each player.
+
+I used the standard Elo expected-score formula described by the FIDE Rating Regulations:
+
+\[ E = 1 / (1 + 10\^((R_B - R_A) / 400))\]
+
+where (E) is the expected score for a game, (R\_\_B) is the player's pre-rating, and (R_A) is the opponent's pre-rating. The expected scores for each game were then added together to calculate each player's expected tournament score.
+
+I compared each player's expected score with their actual score. A positive difference indicates that a player scored more points than expected, while a negative one indicates that they scored fewer points than expected. I then used these differences to identify the five players who most overperformed and the five who most underperformed.
+
+The results show that some players performed substantially better than their pre-tournament ratings. Aditya Bajaj had the largest positive difference, scoring 6 points compared with an expected score of about 1.95. On the other end, Loren Schwiebert had the largest negative difference, scoring 3.5 points compared with an expected score of about 6.28.
+
+### AI Assistance
+
+OpenAI. (2026). ChatGPT \[Generative AI chat\]. <https://chatgpt.com/>
+
+ChatGPT was used as a supplemental tool to help understand R syntax, troubleshoot code, and clarify the steps used to calculate the Elo expected scores and compare them with the players' actual scores.

@@ -112,7 +112,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="approach-deliverable">Approach Deliverable</h2>
 <section id="overview" class="level3">
 <h3 class="anchored" data-anchor-id="overview">Overview</h3>
-<p>For this assignment, I will build on the CSV I created in Project 1. The plan is to use each player’s pre-tournament rating and the pre-tournament ratings of their seven opponents to calculate an expected score for each game using the standard Elo expected-score formula. I will then add the expected scores across all seven games to get each player’s expected tournament score and compare it with their actual score. Finally, I will calculate the difference between actual and expected scores and identify the five players with the largest positive differences and the five with the largest negative differences.</p>
+<p>For this assignment, I will build on the dataframe I created in Project 1. The plan is to use each player’s pre-tournament rating and the pre-tournament ratings of their seven opponents to calculate an expected score for each game using the standard Elo expected-score formula. I will then add the expected scores across all seven games to get each player’s expected tournament score and compare it with their actual score. Finally, I will calculate the difference between actual and expected scores and identify the five players with the largest positive differences and the five with the largest negative differences.</p>
 </section>
 </section>
 <section id="code-base-deliverable" class="level2">
@@ -137,9 +137,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data-and-transformations" class="level3">
 <h3 class="anchored" data-anchor-id="data-and-transformations">Data and transformations</h3>
-<p>Load data from github and examine it</p>
+<p>Load original text file data from github</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tournament_results <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(   <span class="st">"https://raw.githubusercontent.com/ceciliadelafuentech/DATA607-Week5B/refs/heads/main/tournament_results.csv"</span> )  </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tournament_txt <span class="ot">&lt;-</span> <span class="fu">readLines</span>(   <span class="st">"https://raw.githubusercontent.com/ceciliadelafuentech/DATA607-Week5B/refs/heads/main/tournamentinfo.txt"</span> )  </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in
+readLines("https://raw.githubusercontent.com/ceciliadelafuentech/DATA607-Week5B/refs/heads/main/tournamentinfo.txt"):
+incomplete final line found on
+'https://raw.githubusercontent.com/ceciliadelafuentech/DATA607-Week5B/refs/heads/main/tournamentinfo.txt'</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(tournament_txt)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> chr [1:196] "-----------------------------------------------------------------------------------------" ...</code></pre>
+</div>
+</div>
+<p>Load CSV output created for Project 1</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>tournament_results <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(   <span class="st">"https://raw.githubusercontent.com/ceciliadelafuentech/DATA607-Week5B/refs/heads/main/tournament_results.csv"</span> )  </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 64 Columns: 6
 ── Column specification ────────────────────────────────────────────────────────
@@ -150,7 +164,7 @@ dbl (4): points, pre_rating, pair, avg_opponent_rating
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(tournament_results)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(tournament_results)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 64
 Columns: 6
@@ -162,6 +176,149 @@ $ pair                &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
 $ avg_opponent_rating &lt;dbl&gt; 1605, 1469, 1564, 1574, 1501, 1519, 1372, 1468, 15…</code></pre>
 </div>
 </div>
+<p>Using the same strategy as in Project1, extract each players’ opponents</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>first_lines <span class="ot">&lt;-</span> tournament_txt[<span class="fu">grepl</span>(<span class="st">"^</span><span class="sc">\\</span><span class="st">s*</span><span class="sc">\\</span><span class="st">d+</span><span class="sc">\\</span><span class="st">s*</span><span class="sc">\\</span><span class="st">|"</span>, tournament_txt)]</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>rounds <span class="ot">&lt;-</span> <span class="fu">strsplit</span>(first_lines, <span class="st">"</span><span class="sc">\\</span><span class="st">|"</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>opponents <span class="ot">&lt;-</span> <span class="fu">lapply</span>(rounds, <span class="cf">function</span>(x) {</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">"[^0-9]"</span>, <span class="st">""</span>, x[<span class="dv">4</span><span class="sc">:</span><span class="dv">10</span>]))</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Checking the code by calling Gary’s (first player on the file) opponents</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>opponents[[<span class="dv">1</span>]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 39 21 18 14  7 12  4</code></pre>
+</div>
+</div>
+<p>This returns Gary’s seven opponents’ ratings.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>tournament_results<span class="sc">$</span>pre_rating[</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">match</span>(opponents[[<span class="dv">1</span>]], tournament_results<span class="sc">$</span>pair)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1436 1563 1600 1610 1649 1663 1716</code></pre>
+</div>
+</div>
+<p>Get Gary’s pre-tournament rating.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>player_rating <span class="ot">&lt;-</span> tournament_results<span class="sc">$</span>pre_rating[<span class="dv">1</span>]</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(player_rating)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1794</code></pre>
+</div>
+</div>
+<p>Store the pre-ratings of Gary’s opponents.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>opponent_ratings <span class="ot">&lt;-</span> tournament_results<span class="sc">$</span>pre_rating[</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">match</span>(opponents[[<span class="dv">1</span>]], tournament_results<span class="sc">$</span>pair)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Calculate Gary’s expected score for each game using the Elo formula.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>expected_scores <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="dv">10</span><span class="sc">^</span>((opponent_ratings <span class="sc">-</span> player_rating) <span class="sc">/</span> <span class="dv">400</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Check the expected score for each of Gary’s seven games.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>expected_scores</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.8870357 0.7907981 0.7533861 0.7425356 0.6973451 0.6800707 0.6104024</code></pre>
+</div>
+</div>
+<p>Add the expected scores together to get Gary’s expected tournament score.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(expected_scores)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5.161574</code></pre>
+</div>
+</div>
+<p>Subtract Gary’s expected score from his actual score to see how much he over- or underperformed.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>difference <span class="ot">&lt;-</span> tournament_results<span class="sc">$</span>points[<span class="dv">1</span>] <span class="sc">-</span> <span class="fu">sum</span>(expected_scores)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>difference</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.8384264</code></pre>
+</div>
+</div>
+<p>Once process has been confirmed to work, apply the same calculation to every player. The na.rm = TRUE ignores rounds where there was no opponent, such as a U or H in the original tournament file.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>expected_scores <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(tournament_results), <span class="cf">function</span>(i) {</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  player_rating <span class="ot">&lt;-</span> tournament_results<span class="sc">$</span>pre_rating[i]</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  opponent_ratings <span class="ot">&lt;-</span> tournament_results<span class="sc">$</span>pre_rating[</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">match</span>(opponents[[i]], tournament_results<span class="sc">$</span>pair)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  expected_scores <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="dv">10</span><span class="sc">^</span>((opponent_ratings <span class="sc">-</span> player_rating) <span class="sc">/</span> <span class="dv">400</span>))</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>(expected_scores, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Add the expected score for each player to the dataset.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>tournament_results<span class="sc">$</span>expected_scores <span class="ot">&lt;-</span> expected_scores</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Calculate the difference between each player’s actual score and expected score.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>tournament_results<span class="sc">$</span>difference <span class="ot">&lt;-</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  tournament_results<span class="sc">$</span>points <span class="sc">-</span> tournament_results<span class="sc">$</span>expected_scores</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Sort the players from largest to smallest difference and select the five players who overperformed the most.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>top_overperformers <span class="ot">&lt;-</span> tournament_results <span class="sc">%&gt;%</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(difference)) <span class="sc">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, points, expected_scores, difference) <span class="sc">%&gt;%</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">5</span>)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>top_overperformers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 4
+  name                     points expected_scores difference
+  &lt;chr&gt;                     &lt;dbl&gt;           &lt;dbl&gt;      &lt;dbl&gt;
+1 ADITYA BAJAJ                6            1.95         4.05
+2 ZACHARY JAMES HOUGHTON      4.5          1.37         3.13
+3 ANVIT RAO                   5            1.94         3.06
+4 JACOB ALEXANDER LAVALLEY    3            0.0432       2.96
+5 AMIYATOSH PWNANANDAM        3.5          0.773        2.73</code></pre>
+</div>
+</div>
+<p>Sort the players from smallest to largest difference and select the five players who underperformed the most.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>top_underperformers <span class="ot">&lt;-</span> tournament_results <span class="sc">%&gt;%</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(difference) <span class="sc">%&gt;%</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name, points, expected_scores, difference) <span class="sc">%&gt;%</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">5</span>)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>top_underperformers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 4
+  name               points expected_scores difference
+  &lt;chr&gt;               &lt;dbl&gt;           &lt;dbl&gt;      &lt;dbl&gt;
+1 LOREN SCHWIEBERT      3.5            6.28      -2.78
+2 GEORGE AVERY JONES    3.5            6.02      -2.52
+3 JARED GE              3              5.01      -2.01
+4 RISHI SHETTY          3.5            5.09      -1.59
+5 JOSHUA DAVID LEE      3.5            4.96      -1.46</code></pre>
+</div>
+</div>
+</section>
+<section id="conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion">Conclusion</h3>
+<p>For this project, I used the tournament data from Project 1 to calculate each player’s expected score based on the difference between their pre-tournament rating and the pre-tournament rating of each opponent. I first extracted the opponent numbers from the original tournament text file and matched those numbers to the players’ pre-ratings in the Project 1 dataset. I then calculated the expected score for each game using the Elo formula and summed the individual expected scores to get an expected score for each player.</p>
+<p>I used the standard Elo expected-score formula described by the FIDE Rating Regulations:</p>
+<p>[ E = 1 / (1 + 10^((R_B - R_A) / 400))]</p>
+<p>where (E) is the expected score for a game, (R__B) is the player’s pre-rating, and (R_A) is the opponent’s pre-rating. The expected scores for each game were then added together to calculate each player’s expected tournament score.</p>
+<p>I compared each player’s expected score with their actual score. A positive difference indicates that a player scored more points than expected, while a negative one indicates that they scored fewer points than expected. I then used these differences to identify the five players who most overperformed and the five who most underperformed.</p>
+<p>The results show that some players performed substantially better than their pre-tournament ratings. Aditya Bajaj had the largest positive difference, scoring 6 points compared with an expected score of about 1.95. On the other end, Loren Schwiebert had the largest negative difference, scoring 3.5 points compared with an expected score of about 6.28.</p>
+</section>
+<section id="ai-assistance" class="level3">
+<h3 class="anchored" data-anchor-id="ai-assistance">AI Assistance</h3>
+<p>OpenAI. (2026). ChatGPT [Generative AI chat]. <a href="https://chatgpt.com/" class="uri">https://chatgpt.com/</a></p>
+<p>ChatGPT was used as a supplemental tool to help understand R syntax, troubleshoot code, and clarify the steps used to calculate the Elo expected scores and compare them with the players’ actual scores.</p>
 </section>
 </section>
 
